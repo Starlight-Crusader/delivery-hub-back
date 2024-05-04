@@ -3,7 +3,7 @@ from .models import Agent
 from django.contrib.auth.hashers import make_password
 
 
-class AgentSerializer(serializers.ModelSerializer):
+class CreateAgentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Agent
@@ -15,3 +15,10 @@ class AgentSerializer(serializers.ModelSerializer):
         validated_data['manager_pass'] = make_password(validated_data['manager_pass'])
 
         return super().create(validated_data)
+
+
+class AgentSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Agent
+        fields = ['name', 'type']

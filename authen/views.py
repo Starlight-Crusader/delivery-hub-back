@@ -1,13 +1,20 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from rest_framework import views, permissions, status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from enum import Enum
 
 from .serializers import LoginSerializer
 from .jwt import JWTAuthentication
 
 Agent = get_user_model()
+
+
+class UserRoles(Enum):
+    VIEWER = 1
+    WORKER = 2
+    MANAGER = 3
 
 
 class LoginView(views.APIView):
@@ -23,22 +30,19 @@ class LoginView(views.APIView):
 
         agent = Agent.objects.get(name=name)
         if agent is None:
-            return Response({'message': "Agent not found!"}, status=status.HTTP_404_NOT_FOUND)
-        
-        VIEWER = 1
-        WORKER = 2
-        MANAGER = 3
-        user_type = None
+            return Response({'detail': "Agent not found!"}, status=status.HTTP_404_NOT_FOUND)
+
+        user_role = None
 
         if check_password(password, agent.viewer_pass):
-            user_type = VIEWER
+            user_role = UserRoles.VIEWER.value
         elif check_password(password, agent.worker_pass):
-            user_type = WORKER
+            user_role = UserRoles.WORKER.value
         elif check_password(password, agent.manager_pass):
-            user_type = MANAGER
+            user_role = UserRoles.MANAGER.value
         else:
-            return Response({'message': "Incorrect password!"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'details': "Incorrect password!"}, status=status.HTTP_401_UNAUTHORIZED)
         
-        jwt_token = JWTAuthentication.create_jwt(agent, user_type)
+        jwt_token = JWTAuthentication.create_jwt(agent, user_role)
 
-        return Response({'token': jwt_token})
+        return Response({'token': jwt_token, 'agent_name': agent.name, 'agent_type': agent.type, 'user_role': user_role}, status=status.HTTP_200_OK)

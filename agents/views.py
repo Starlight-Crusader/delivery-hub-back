@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework import response, status, permissions
 
 from .models import Agent
-from .serializers import AgentSerializer
+from .serializers import CreateAgentSerializer, AgentSerializer
 
 ADMIN_PASS_HEADER_NAME = 'X-Password'
 ADMIN_PASS = 'DjIbOuTi'
@@ -26,7 +26,7 @@ def get_all_agents(request):
         serializer = AgentSerializer(agents, many=True)
         return response.Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
-        return response.Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return response.Response({'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -37,22 +37,22 @@ def get_one_agent(request, user_id):
         serializer = AgentSerializer(agent)
         return response.Response(serializer.data, status=status.HTTP_200_OK)
     except Agent.DoesNotExist:
-        return response.Response({'message': 'Agent not found'}, status=status.HTTP_404_NOT_FOUND)
+        return response.Response({'details': 'Agent not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return response.Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return response.Response({'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
 @permission_classes([PassAuth])
 def create_agent(request):
     try:
-        serializer = AgentSerializer(data=request.data)
+        serializer = CreateAgentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return response.Response(serializer.data, status=status.HTTP_201_CREATED)
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        return response.Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return response.Response({'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['DELETE'])
@@ -60,9 +60,9 @@ def create_agent(request):
 def drop_all_agents(request):
     try:
         Agent.objects.all().delete()
-        return response.Response({'message': 'All agents deleted successfully.'}, status=status.HTTP_200_OK)
+        return response.Response({'details': 'All agents deleted successfully.'}, status=status.HTTP_200_OK)
     except Exception as e:
-        return response.Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return response.Response({'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['DELETE'])
@@ -71,8 +71,8 @@ def drop_one_agent(request, user_id):
     try:
         agent = Agent.objects.get(id=user_id)
         agent.delete()
-        return response.Response({'message': f'Agent with ID {user_id} deleted successfully.'}, status=status.HTTP_200_OK)
+        return response.Response({'details': f'Agent with ID {user_id} deleted successfully.'}, status=status.HTTP_200_OK)
     except Agent.DoesNotExist:
-        return response.Response({'message': 'Agent not found'}, status=status.HTTP_404_NOT_FOUND)
+        return response.Response({'details': 'Agent not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return response.Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return response.Response({'details': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

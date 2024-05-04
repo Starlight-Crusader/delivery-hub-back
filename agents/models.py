@@ -1,16 +1,19 @@
 from django.db import models
-# from django.contrib.auth.hashers import make_password
+
+from enum import Enum
+
+
+class AgentTypes(Enum):
+    CONSUMER = 1
+    PROVIDER = 2
 
 
 class Agent(models.Model):
     name = models.CharField(max_length=30, unique=True)
 
-    CONSUMER = 1
-    PROVIDER = 2
-
     TYPE_CHOISES = [
-        (CONSUMER, 'Consumer'),
-        (PROVIDER, 'Provider'),
+        (AgentTypes.CONSUMER.value, 'Consumer'),
+        (AgentTypes.PROVIDER.value, 'Provider'),
     ]
 
     type = models.IntegerField(choices=TYPE_CHOISES)

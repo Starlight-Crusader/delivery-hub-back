@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 import jwt
+from jwt.exceptions import ExpiredSignatureError
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import authentication
@@ -11,9 +12,8 @@ Agent = get_user_model()
 
 class JWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
-
         # Extract the JWT from the Authorization header
-        jwt_token = request.META.get('HTTP_AUTHORIZATION')
+        jwt_token = request.headers.get('Authorization')
         if jwt_token is None:
             return None
         
@@ -23,9 +23,12 @@ class JWTAuthentication(authentication.BaseAuthentication):
         try:
             payload = jwt.decode(jwt_token, settings.JWT_CONF['SECRET_KEY'], algorithms=['HS256'])
         except jwt.exceptions.InvalidSignatureError:
-            raise AuthenticationFailed('Invalid signature')
+            raise AuthenticationFailed('Invalid signature!')
+        except ExpiredSignatureError:
+            raise AuthenticationFailed('Token has expired!')
         except:
             raise ParseError()
+    
         
         # Get the user's org. from the database
         agent_id = payload.get('agent_id')
@@ -35,23 +38,19 @@ class JWTAuthentication(authentication.BaseAuthentication):
         agent = Agent.objects.get(id=agent_id)
         if agent is None:
             raise AuthenticationFailed('Agent not found!')
-
+        
         # Return the agent and token payload
         return agent, payload
-    
-    def authenticate_header(self, request):
-        return 'Bearer'
 
     @classmethod
-    def create_jwt(cls, agent, user_type):
+    def create_jwt(cls, agent, user_role):
 
         # Create the JWT payload
         payload = {
             'agent_id': agent.id,
-            'exp': int((datetime.now() + timedelta(minutes=settings.JWT_CONF['TOKEN_LIFETIME_MINUTES'])).timestamp()),
+            'user_role': user_role,
             'iat': datetime.now().timestamp(),
-            'agent_type': agent.type,
-            'user_type': user_type
+            'exp': int((datetime.now() + timedelta(minutes=settings.JWT_CONF['TOKEN_LIFETIME_MINUTES'])).timestamp()),
         }
 
         # Encode the JWT with your secret key

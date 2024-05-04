@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'agents',
+    'authen'
 ]
 
 MIDDLEWARE = [
@@ -121,3 +123,32 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Auth model
+
+AUTH_USER_MODEL = "agents.Agent"
+
+# CORS
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:5173'
+]
+
+# REST FRAMEWORK
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'authen.jwt.JWTAuthentication',
+    ]
+}
+
+# JWT
+
+JWT_CONF = {
+    'SECRET_KEY': 'SaMbUbU',
+    'TOKEN_LIFETIME_MINUTES': 10,
+}

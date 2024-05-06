@@ -28,8 +28,11 @@ class LoginView(views.APIView):
         name = serializer.validated_data.get('name')
         password = serializer.validated_data.get('password')
 
-        agent = Agent.objects.get(name=name)
-        if agent is None:
+        agent = None
+
+        try:
+            agent = Agent.objects.get(name=name)
+        except Agent.DoesNotExist:
             return Response({'detail': "Agent not found!"}, status=status.HTTP_404_NOT_FOUND)
 
         user_role = None
@@ -41,7 +44,7 @@ class LoginView(views.APIView):
         elif check_password(password, agent.manager_pass):
             user_role = UserRoles.MANAGER.value
         else:
-            return Response({'details': "Incorrect password!"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'detail': "Incorrect password!"}, status=status.HTTP_401_UNAUTHORIZED)
         
         jwt_token = JWTAuthentication.create_jwt(agent, user_role)
 

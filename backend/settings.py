@@ -37,9 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'agents',
     'authen',
     'deliveries',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -131,9 +134,8 @@ AUTH_USER_MODEL = "agents.Agent"
 
 # CORS
 
-CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:5173'
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
 ]
 
 # REST FRAMEWORK
@@ -152,4 +154,10 @@ REST_FRAMEWORK = {
 JWT_CONF = {
     'SECRET_KEY': 'SaMbUbU',
     'TOKEN_LIFETIME_MINUTES': 10,
+}
+
+# Swagger
+
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
 }

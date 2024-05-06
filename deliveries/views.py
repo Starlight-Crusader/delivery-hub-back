@@ -96,7 +96,7 @@ def take_delivery(request, delivery_id):
         return response.Response({'detail': "Delivery record not found."}, status=status.HTTP_404_NOT_FOUND)
     
     if payload['user_role'] != UserRoles.MANAGER.value or agent.type != AgentTypes.PROVIDER.value:
-        return response.Response({'detail': "You are not allowed to do this."}, status=status.HTTP_403_FORBIDDEN)
+        return response.Response({'detail': "You are not allowed to do this!"}, status=status.HTTP_403_FORBIDDEN)
     
     if delivery.by_agent is None:
         delivery.by_agent = agent
@@ -104,8 +104,7 @@ def take_delivery(request, delivery_id):
 
         return response.Response({'detail': "You've successfuly taken this delivery order."}, status=status.HTTP_200_OK)
     else:
-        return response.Response({'detail': "This delivery order is already taken."}, status=status.HTTP_403_FORBIDDEN)
-
+        return response.Response({'detail': "This delivery order is already taken!"}, status=status.HTTP_403_FORBIDDEN)
 
 
 @api_view(['PATCH'])
@@ -127,8 +126,6 @@ def check_delivery(request, delivery_id):
         return response.Response({'detail': "You are not allowed to do this."}, status=status.HTTP_403_FORBIDDEN)
     
     if agent.type == AgentTypes.CONSUMER.value:
-        print("Consumer!", delivery.issued == False, delivery.from_agent == agent, delivery.by_agent is not None)
-
         if delivery.issued == False and delivery.from_agent == agent and delivery.by_agent is not None:
             delivery.issued = True
             delivery.save()

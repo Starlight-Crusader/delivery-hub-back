@@ -1,5 +1,5 @@
 from django.db.models import Q
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import response, status
 from rest_framework.pagination import PageNumberPagination
 
@@ -7,6 +7,8 @@ from .models import Delivery
 from agents.models import Agent, AgentTypes
 from .serializers import CreateDeliverySerializer, DeliverySerializer
 from authen.views import UserRoles
+
+from agents.views import PassAuth
 
 from authen.jwt import JWTAuthentication
 
@@ -143,3 +145,34 @@ def check_delivery(request, delivery_id):
 
     return response.Response({'detail': "Records successfully updated."}, status=status.HTTP_200_OK)
 
+
+@api_view(['DELETE'])
+def remove_one_order(request, delivery_id):
+    agent, payload = None, None
+    try:
+        jwt_auth = JWTAuthentication()
+        agent, payload = jwt_auth.authenticate(request)
+    except:
+        return response.Response({'detail': "Auth. credentials are incorrect/missing."}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    delivery = None
+    try:
+        delivery = Delivery.objects.get(id=delivery_id)
+    except Delivery.DoesNotExist:
+        return response.Response({'detail': "Delivery record not found."}, status=status.HTTP_404_NOT_FOUND)
+    
+    if (agent.type == AgentTypes.CONSUMER.value and payload['user_role'] == UserRoles.MANAGER.value):
+        delivery.delete()
+        return response.Response({'detail': "Delivery record removed successfully."}, status=status.HTTP_200_OK)
+    else:
+        return response.Response({'detail': "You are not allowed to do this."}, status=status.HTTP_403_FORBIDDEN)
+
+
+@api_view(['DELETE'])
+@permission_classes([PassAuth])
+def drop_all_deliveries(request):
+    try:
+        Delivery.objects.all().delete()
+        return response.Response({'detail': 'All deliveries deleted successfully.'}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return response.Response({'detail': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

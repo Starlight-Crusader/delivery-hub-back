@@ -142,3 +142,4 @@ def check_delivery(request, delivery_id):
             return response.Response({'detail': "You are not allowed to do this."}, status=status.HTTP_403_FORBIDDEN)
 
     return response.Response({'detail': "Records successfully updated."}, status=status.HTTP_200_OK)
+

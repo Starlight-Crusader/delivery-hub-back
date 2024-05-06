@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'agents',
     'authen',
     'deliveries',
-    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -154,10 +153,4 @@ REST_FRAMEWORK = {
 JWT_CONF = {
     'SECRET_KEY': 'SaMbUbU',
     'TOKEN_LIFETIME_MINUTES': 10,
-}
-
-# Swagger
-
-SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH': False,
 }

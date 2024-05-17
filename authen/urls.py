@@ -3,4 +3,5 @@ from . import views
 
 urlpatterns = [
     path('login', views.LoginView.as_view()),
+    path('get-rand-token', views.get_rand_token),
 ]

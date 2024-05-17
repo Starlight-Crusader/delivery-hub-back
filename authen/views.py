@@ -2,8 +2,13 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from rest_framework import views, permissions, status
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+import random
 
 from enum import Enum
+
+from agents.views import PassAuth
+from agents.models import Agent
 
 from .serializers import LoginSerializer
 from .jwt import JWTAuthentication
@@ -49,3 +54,15 @@ class LoginView(views.APIView):
         jwt_token = JWTAuthentication.create_jwt(agent, user_role)
 
         return Response({'token': jwt_token, 'agent_name': agent.name, 'agent_type': agent.type, 'user_role': user_role}, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([PassAuth])
+def get_rand_token(request):
+    roles_list = list(role.value for role in UserRoles)
+    rand_role = random.choice(roles_list)
+    rand_agent = random.choice(Agent.objects.all())
+
+    jwt_token = JWTAuthentication.create_jwt(rand_agent, rand_role)
+
+    return Response({'token': jwt_token, 'agent_name': rand_agent.name, 'agent_type': rand_agent.type, 'user_role': rand_role}, status=status.HTTP_200_OK)
